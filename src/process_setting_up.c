@@ -7,47 +7,94 @@
 
 #include "./include/setting_up.h"
 
-static int confirm_amount_lines(int fd)
-{
-    char read_char = 0;
-    int number = 0;
-    int i = 0;
-
-    read(fd, read_char, 1);
-    for (; read_char >= '0' && read_char <= '9';) {
-        number = (number * 10) + (lines[i] - '0');
-    }
-    if (read_char != '\n')
-        return 0;
-    return number;
-}
-
-static int is_end_line(char buffer[])
-{
-    for (int i = 0; i < 10; i++) {
-        if (buffer[i] == '\n')
-            return i;
-    }
-    return 0;
-}
-
-static int get_first_line_length(int fd)
+static int read_line_count(int fd)
 {
     char buffer[10];
-    int total = 0;
-    int found_line_end = 10;
+    char current_char;
+    int i = 0;
+    int read_result;
 
-    while (found_line_end == 10) {
-        read(fd, buffer, 10);
-        found_line_end = is_end_line(buffer);
+    while ((read_result = read(fd, &current_char, 1)) == 1) {
+        if (current_char == '\n')
+            break;
+        if (current_char < '0' || current_char > '9')
+            return -1;
+        if (i >= 9)
+            return -1;
+        buffer[i++] = current_char;
     }
+    if (read_result != 1 || i == 0)
+        return -1;
+    buffer[i] = 0;
+    return str_to_int(buffer);
+}
+
+static char *read_single_line(int fd)
+{
+    char *line = malloc(sizeof(char) * 10000);
+    char buffer;
+    int i = 0;
+
+    if (line == NULL)
+        return NULL;
+    while (read(fd, &buffer, 1) == 1) {
+        if (buffer != '.' && buffer != 'o' && buffer != '\n') {
+            free(line);
+            return NULL;
+        }
+        line[i++] = buffer;
+        if (buffer == '\n') {
+            line[i] = 0;
+            return line;
+        }
+    }
+    free(line);
+    return NULL;
+}
+
+static char **allocate_board(int line_count)
+{
+    char **board = malloc(sizeof(char *) * (line_count + 1));
+
+    if (board == NULL)
+        return NULL;
+    board[line_count] = NULL;
+    return board;
+}
+
+static char **read_board_lines(int fd, char **board, int line_count, int expected_len)
+{
+    int len = 0;
+
+    for (int i = 1; i < line_count; i++) {
+        board[i] = read_single_line(fd);
+        if (board[i] == NULL) {
+            free_board(board);
+            return NULL;
+        }
+        len = str_len(board[i]);
+        if (len != expected_len) {
+            free_board(board);
+            return NULL;
+        }
+    }
+    return board;
 }
 
 char **process_setting_up(int fd)
 {
-    int lines = confirm_amount_lines(fd);
-    int first_line_length = get_first_line_length(fd);
-    char **test = malloc(sizeof(char*) * 2);
+    int line_count = read_line_count(fd);
+    char **board;
 
-    return test;
+    if (line_count <= 0)
+        return NULL;
+    board = allocate_board(line_count);
+    if (board == NULL)
+        return NULL;
+    board[0] = read_single_line(fd);
+    if (board[0] == NULL) {
+        free(board);
+        return NULL;
+    }
+    return read_board_lines(fd, board, line_count, str_len(board[0]));
 }

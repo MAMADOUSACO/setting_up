@@ -32,38 +32,41 @@ static void print_final_board(char **board, int *corners)
 static int setting_up_generating(int dimension, char *pattern)
 {
     char **board = generate_setting_up(dimension, pattern);
-    char **copy = generate_setting_up(dimension, pattern);
     int *corners;
-    
+
     if (board == NULL)
         return print_error_msg(4);
-    corners = find_biggest_square(copy);
+    corners = find_biggest_square(board);
     print_final_board(board, corners);
     free_board(board);
-    free_board(copy);
     free(corners);
     return 0;
 }
 
-static int setting_up_file(char *path)
+static char **load_board(char *path)
 {
     int fd = open(path, O_RDONLY);
     char **board;
-    //char **copy;
-    //int *corners;
-    
+
     if (fd == -1)
-        return print_error_msg(3);
+        return NULL;
     board = process_setting_up(fd);
-    //copy = process_setting_up(fd);
-    /*if (board == NULL)
-        return print_error_msg(5);
-    corners = find_biggest_square(copy);
-    print_final_board(board, corners);*/
-    free_board(board);
-    //free_board(copy);
-    //free(corners);
     close(fd);
+    return board;
+}
+
+static int setting_up_file(char *path)
+{
+    char **board;
+    int *corners;
+
+    board = load_board(path);
+    if (board == NULL)
+        return print_error_msg(5);
+    corners = find_biggest_square(board);
+    print_final_board(board, corners);
+    free_board(board);
+    free(corners);
     return 0;
 }
 
@@ -86,12 +89,3 @@ int main(int argc, char **argv)
         return setting_up_file(argv[1]);
     }
 }
-
-/*
-    char **test = generate_setting_up(6, "..o..");
-    for (int i = 0; test[i] != NULL; i++) {
-        printf("%s\n", test[i]);
-    }
-    free_setting_up(test);
-    return 0;
-*/

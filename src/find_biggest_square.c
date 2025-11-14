@@ -7,72 +7,118 @@
 
 #include "./include/setting_up.h"
 
-static void prepare_board(char **board)
+static int **create_dp_table(char **board)
 {
+    int height = 0;
+    int width = str_len(board[0]) - 1;
+    int **dp;
+
+    for (int i = 0; board[i] != 0; i++)
+        height++;
+    dp = malloc(sizeof(int *) * height);
+    for (int i = 0; i < height; i++) {
+        dp[i] = malloc(sizeof(int) * width);
+        for (int j = 0; j < width; j++)
+            dp[i][j] = 0;
+    }
+    return dp;
+}
+
+static void free_dp_table(int **dp, char **board)
+{
+    for (int i = 0; board[i] != 0; i++)
+        free(dp[i]);
+    free(dp);
+}
+
+static void initialize_dp(int **dp, char **board)
+{
+    int width = str_len(board[0]) - 1;
+
     for (int i = 0; board[i] != 0; i++) {
         if (board[i][0] == '.')
-            board[i][0] = 12;
-        if (board[i][0] == 'o')
-            board[i][0] = 11;
+            dp[i][0] = 1;
+        else
+            dp[i][0] = 0;
     }
-    for (int i = 0; board[0][i] != 0; i++) {
-        if (board[0][i] == '.')
-            board[0][i] = 12;
-        if (board[0][i] == 'o')
-            board[0][i] = 11;
+    for (int j = 0; j < width; j++) {
+        if (board[0][j] == '.')
+            dp[0][j] = 1;
+        else
+            dp[0][j] = 0;
     }
 }
 
-static char set_single_value(char **board, int y, int x)
+static int min3(int a, int b, int c)
 {
-    char min;
+    int min = a;
 
-    if (y == 0 || x == 0)
-        return board[y][x];
-    if (board[y][x] == 'o')
-        return 11;
-    min = board[y - 1][x];
-    min = (board[y][x - 1] < min) ? board[y][x - 1] : min;
-    min = (board[y - 1][x - 1] < min) ? board[y - 1][x - 1] : min;
-    return min + 1;
+    if (b < min)
+        min = b;
+    if (c < min)
+        min = c;
+    return min;
 }
 
-static int get_biggest_number_pos(char **board)
+static int get_biggest_square_pos(int **dp, char **board)
 {
-    char max = 0;
-    char len = str_len(board[0]);
-    int x = 0;
-    int y = 0;
+    int max = 0;
+    int width = str_len(board[0]) - 1;
+    int pos_y = 0;
+    int pos_x = 0;
 
     for (int i = 0; board[i] != 0; i++) {
-        for (int j = 0; board[i][j] != '\n'; j++) {
-            y = (board[i][j] > max) ? i : y;
-            x = (board[i][j] > max) ? j : x;
-            max = (board[i][j] > max) ? board[i][j] : max;
+        for (int j = 0; j < width; j++) {
+            if (dp[i][j] > max) {
+                max = dp[i][j];
+                pos_y = i;
+                pos_x = j;
+            }
         }
     }
-    return y * len + x;
+    return pos_y * width + pos_x;
+}
+
+static void fill_dp_table(int **dp, char **board)
+{
+    int width = str_len(board[0]) - 1;
+
+    for (int i = 1; board[i] != 0; i++) {
+        for (int j = 1; j < width; j++) {
+            if (board[i][j] == 'o') {
+                dp[i][j] = 0;
+            } else {
+                dp[i][j] = min3(dp[i - 1][j], dp[i][j - 1],
+                    dp[i - 1][j - 1]) + 1;
+            }
+        }
+    }
+}
+
+static int *calculate_corners(int pos, int width, int biggest)
+{
+    int *result = malloc(sizeof(int) * 4);
+
+    result[0] = (pos / width) - biggest + 1;
+    result[1] = (pos / width);
+    result[2] = (pos % width) - biggest + 1;
+    result[3] = (pos % width);
+    return result;
 }
 
 // RETURN FORMAT : {y1, y2, x1, x2}
 int *find_biggest_square(char **board)
 {
-    int pos = 0;
-    int biggest = 0;
-    int len = str_len(board[0]);
-    int *result = malloc(sizeof(int) * 4);
+    int **dp = create_dp_table(board);
+    int width = str_len(board[0]) - 1;
+    int pos, biggest;
+    int *result;
 
-    prepare_board(board);
-    for (int i = 0; board[i] != 0; i++) {
-        for (int j = 0; board[i][j] != '\n'; j++) {
-            board[i][j] = set_single_value(board, i, j);
-        }
-    }
-    pos = get_biggest_number_pos(board);
-    biggest = board[pos / len][pos % len] - 11;
-    result[0] = (pos / len) - biggest + 1;
-    result[1] = (pos / len);
-    result[2] = (pos % len) - biggest + 1;
-    result[3] = (pos % len);
+    initialize_dp(dp, board);
+    fill_dp_table(dp, board);
+    pos = get_biggest_square_pos(dp, board);
+    biggest = dp[pos / width][pos % width];
+    result = calculate_corners(pos, width, biggest);
+    free_dp_table(dp, board);
     return result;
 }
