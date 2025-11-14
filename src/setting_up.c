@@ -20,11 +20,16 @@ static bool is_in_corners(int y, int x, int *corners)
     return true;
 }
 
+static void write_single_char(int i, int j, int *corners, char **board)
+{
+    write(1, (is_in_corners(i, j, corners) == true) ? "x" : &board[i][j], 1);
+}
+
 static void print_final_board(char **board, int *corners)
 {
     for (int i = 0; board[i] != 0; i++) {
         for (int j = 0; board[i][j] != 0; j++) {
-            write(1, (is_in_corners(i, j, corners) == true)? "x" : &board[i][j], 1);
+            write_single_char(i, j, corners, board);
         }
     }
 }
@@ -55,7 +60,7 @@ static char **load_board(char *path)
     return board;
 }
 
-static int setting_up_file(char *path)
+int setting_up_file(char *path)
 {
     char **board;
     int *corners;

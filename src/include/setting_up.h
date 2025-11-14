@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2025
+** setting_up
+** File description:
+** Header.
+*/
+
 #ifndef SETTING_UP_H_
     #define SETTING_UP_H_
 

@@ -12,16 +12,18 @@ static int read_line_count(int fd)
     char buffer[10];
     char current_char;
     int i = 0;
-    int read_result;
+    int read_result = read(fd, &current_char, 1);
 
-    while ((read_result = read(fd, &current_char, 1)) == 1) {
+    while (read_result == 1) {
         if (current_char == '\n')
             break;
         if (current_char < '0' || current_char > '9')
             return -1;
         if (i >= 9)
             return -1;
-        buffer[i++] = current_char;
+        buffer[i] = current_char;
+        i++;
+        read_result = read(fd, &current_char, 1);
     }
     if (read_result != 1 || i == 0)
         return -1;
@@ -42,7 +44,8 @@ static char *read_first_line(int fd)
             free(line);
             return NULL;
         }
-        line[i++] = buffer;
+        line[i] = buffer;
+        i++;
         if (buffer == '\n') {
             line[i] = 0;
             return line;
@@ -86,7 +89,8 @@ static char **allocate_board(int line_count)
     return board;
 }
 
-static char **read_board_lines(int fd, char **board, int line_count, int expected_len)
+static char **read_board_lines(int fd, char **board,
+    int line_count, int expected_len)
 {
     char end_buff;
 
