@@ -48,9 +48,23 @@ static int setting_up_generating(int dimension, char *pattern)
 static int setting_up_file(char *path)
 {
     int fd = open(path, O_RDONLY);
+    char **board;
+    //char **copy;
+    //int *corners;
     
     if (fd == -1)
         return print_error_msg(3);
+    board = process_setting_up(fd);
+    //copy = process_setting_up(fd);
+    /*if (board == NULL)
+        return print_error_msg(5);
+    corners = find_biggest_square(copy);
+    print_final_board(board, corners);*/
+    free_board(board);
+    //free_board(copy);
+    //free(corners);
+    close(fd);
+    return 0;
 }
 
 int main(int argc, char **argv)

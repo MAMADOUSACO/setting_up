@@ -9,15 +9,9 @@
 
 static bool is_pattern_correct(char *pattern)
 {
-    bool found_o = false;
-    
     for (int i = 0; pattern[i] != 0; i++) {
         if (pattern[i] != '.' && pattern[i] != 'o')
             return false;
-        if (pattern[i] == 'o' && found_o == true)
-            return false;
-        if (pattern[i] == 'o')
-            found_o = true;
     }
     return true;
 }

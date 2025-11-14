@@ -22,6 +22,7 @@ void free_board(char **setting_up);
 
 // MAIN FUNCTIONS
 char **generate_setting_up(int dimension, char *pattern);
+char **process_setting_up(int fd);
 int *find_biggest_square(char **board);
 
 #endif

@@ -4,7 +4,7 @@ CC := clang
 FLAGS := -Wall -Wextra -Wno-implicit-function-declaration -g3
 
 # Sources
-MAIN_FILES := ./src/setting_up.c ./src/generate_setting_up.c ./src/find_biggest_square.c ./src/process_setting_up_file.c
+MAIN_FILES := ./src/setting_up.c ./src/generate_setting_up.c ./src/find_biggest_square.c ./src/process_setting_up.c
 STR_LIB := ./src/lib/str/str_len.c ./src/lib/str/str_to_int.c ./src/lib/str/str_cmp.c
 MEMORY_LIB := ./src/lib/memory/free_board.c
 DEBUG_LIB := ./src/lib/debug/print_error_msg.c ./src/lib/debug/print_help.c

@@ -9,12 +9,13 @@
 
 int print_error_msg(const int enum_code)
 {
-    char *ERROR_MSGS[6] = {
+    char *ERROR_MSGS[7] = {
         "No arguments provided!",
         "Dimension can't be 0!",
         "No pattern provided!",
         "File couldn't be opened!",
         "Pattern isn't correct!",
+        "File couldn't be processed!",
         NULL,
     };
 
